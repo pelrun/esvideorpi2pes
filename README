@@ -1,0 +1,10 @@
+Encapsulates the h.264 annex B video stream from raspivid into a MPEG-2 PES stream. From there you can use the OpenCaster tools to generate MPEG-TS streams.
+
+Usage: ./esvideorpi2pes <filename> <fps> [stream_id]
+
+Output goes to stdout, so pipe it to a file or fifo.
+
+James Churchill
+pelrun@gmail.com
+VK4CPC
+
