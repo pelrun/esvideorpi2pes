@@ -73,7 +73,7 @@ int16_t buffer_write_byte(Circular_Buffer_t *p, uint8_t c)
 uint16_t buffer_reload(Circular_Buffer_t *p, size_t len)
 {
   uint8_t i = 0;
-  
+
   if (p->fp!=NULL)
   {
     for (i=0; i<len; i++)
@@ -90,7 +90,10 @@ uint16_t buffer_reload(Circular_Buffer_t *p, size_t len)
   return i;
 }
 
-#define CIRCBUF_PEEK(p,index) ((p)->buf[((p)->out+(index)) & (CIRCBUF_SIZE - 1)])
+uint8_t buffer_peek(Circular_Buffer_t *p, uint8_t index)
+{
+  return p->buf[(p->out+index) & (CIRCBUF_SIZE - 1)];
+}
 
 int16_t buffer_read_byte(Circular_Buffer_t *p)
 {
@@ -105,7 +108,7 @@ int16_t buffer_read_byte(Circular_Buffer_t *p)
     }
   }
 
-  ch = CIRCBUF_PEEK(p,0);
+  ch = buffer_peek(p,0);
   p->out++;
 
   return ch;
@@ -114,38 +117,41 @@ int16_t buffer_read_byte(Circular_Buffer_t *p)
 int8_t buffer_detect_start_code(Circular_Buffer_t *p)
 {
   uint32_t buf_len = buffer_length(p);
-  if (buf_len < 3)
+  if (buf_len < 4)
   {
-    if (buf_len + buffer_reload(p, BUFFER_RELOAD_SIZE) < 3)
+    if (buf_len + buffer_reload(p, BUFFER_RELOAD_SIZE) < 4)
     {
       // nothing to reload
       return -1;
     }
   }
-  
-  if (CIRCBUF_PEEK(p,0) == 0x00 && CIRCBUF_PEEK(p,1) == 0x00 && CIRCBUF_PEEK(p,2) == 0x01)
+
+  if (buffer_peek(p,0) == 0x00 && buffer_peek(p,1) == 0x00 && (buffer_peek(p,2) == 0x01 || (buffer_peek(p,2) == 0x00 && buffer_peek(p,3) == 0x01)))
   {
     return 1;
   }
-  
+
   return 0;
 }
 
 size_t read_next_nalu(FILE *fp, uint8_t *out_buf, size_t *out_len)
 {
   int8_t result;
-  
+
   // idempotent, won't delete existing buffer
   buffer_init(&nal_input_buf, fp, BUFFER_RELOAD_SIZE);
+
+  *out_len = 0;
 
   while ((result = buffer_detect_start_code(&nal_input_buf)) == 0)
   {
     // discard byte preceding the start code
-    buffer_read_byte(&nal_input_buf);
+    if (buffer_read_byte(&nal_input_buf) < 0)
+    {
+      return 0;
+    }
   }
 
-  *out_len = 0;
-  
   if (result >= 0)
   {
     // now stream out nalu until next start code or error
@@ -157,11 +163,11 @@ size_t read_next_nalu(FILE *fp, uint8_t *out_buf, size_t *out_len)
         // end of stream
         break;
       }
-      
+
       *out_buf++ = ch;
       *out_len = *out_len+1;
     }
-    while (buffer_detect_start_code(&nal_input_buf) == 0);
+    while (*out_len < 3 || buffer_detect_start_code(&nal_input_buf) == 0);
   }
 
   return *out_len;
@@ -171,17 +177,30 @@ size_t read_next_nalu(FILE *fp, uint8_t *out_buf, size_t *out_len)
 size_t read_next_access_unit(FILE *fp, uint8_t *out_buf, size_t *out_len)
 {
   size_t length = 0;
-  
+
+  *out_len = 0;
+
   while (read_next_nalu(fp, out_buf, &length))
   {
+    uint8_t nal_type;
+
+    if (out_buf[2] == 0x01)
+    {
+      nal_type = out_buf[3] & 0xF;
+    }
+    else
+    {
+      nal_type = out_buf[4] & 0xF;
+    }
+
     *out_len += length;
-    
-    if (out_buf[5] == 1 || out_buf[5] == 5)
+
+    if (nal_type == 1 || nal_type == 5)
     {
       // this is a video frame
       break;
     }
-    
+
     out_buf += length;
   }
 
