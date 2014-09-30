@@ -76,14 +76,11 @@ uint16_t buffer_reload(Circular_Buffer_t *p, size_t len)
 
   if (p->fp!=NULL)
   {
-    for (i=0; i<len; i++)
+    uint8_t buf[BUFFER_RELOAD_SIZE];
+    uint16_t read_len = fread(buf, 1, len, p->fp);
+    for (i=0; i<read_len; i++)
     {
-      int16_t ch = fgetc(p->fp);
-      if (ch<0)
-      {
-        break;
-      }
-      buffer_write_byte(p, ch);
+      buffer_write_byte(p, buf[i]);
     }
   }
 

@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  += -g -MD -Wall -I. -I../../include -D_FILE_OFFSET_BITS=64 $(CPPFLAGS)
+CFLAGS  += -g -O3 -MD -Wall -I. -I../../include -D_FILE_OFFSET_BITS=64 $(CPPFLAGS)
 
 OBJS = esvideorpi2pes.o nal.o
 TARGET = esvideorpi2pes

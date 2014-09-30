@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	int fps;
 	FILE* file_es;
 
-	uint32_t pts;
+	uint32_t pts = 0;
 	uint32_t pts_step = 0;
 	uint32_t frame_counter = 0;
 
@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
 
     fwrite(pes_header, 1, PES_HEADER_SIZE, stdout);
 
+    fwrite(aud_nal, 1, sizeof(aud_nal), stdout);
     fwrite(es_data, 1, es_data_length, stdout);
 
     frame_counter++;
