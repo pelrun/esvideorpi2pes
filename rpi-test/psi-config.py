@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import os
+import os,sys
 
 from dvbobjects.PSI.PAT import *
 from dvbobjects.PSI.NIT import *
@@ -30,6 +30,13 @@ from dvbobjects.MPEG.Descriptors import *
 #
 # Shared values
 #
+
+network_name = "RasPi Network"
+station_name = "RasPi 1"
+
+if len(sys.argv)>2:
+  network_name=sys.argv[1]
+  station_name=sys.argv[2]
 
 avalpa_transport_stream_id = 1 # demo value, an official value should be demanded to dvb org
 avalpa_original_transport_stream_id = 0xFF00 # demo value, an official value should be demanded to dvb org
@@ -46,7 +53,7 @@ avalpa1_pmt_pid = 1031
 nit = network_information_section(
 	network_id = 0xFF01, # private network id
         network_descriptor_loop = [
-	    network_descriptor(network_name = "VK4CPC",), 
+	    network_descriptor(network_name = network_name,), 
             ],
 	transport_stream_loop = [
 	    transport_stream_loop_item(
@@ -109,8 +116,8 @@ sdt = service_description_section(
 		service_descriptor_loop = [
 		    service_descriptor(
 			service_type = 1, # digital television service
-			service_provider_name = "VK4CPC",
-			service_name = "VK4CPC 1",
+			service_provider_name = network_name,
+			service_name = station_name,
 		    ),    
 		],
 	    ),	
