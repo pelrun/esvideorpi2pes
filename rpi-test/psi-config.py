@@ -159,31 +159,31 @@ pmt = program_map_section(
 # PSI marshalling and encapsulation
 #
 
-out = open("./nit.sec", "wb")
+out = open("sec/nit.sec", "wb")
 out.write(nit.pack())
 out.close
-out = open("./nit.sec", "wb") # python  flush bug
+out = open("sec/nit.sec", "wb") # python  flush bug
 out.close
-os.system('/usr/local/bin/sec2ts 16 < ./nit.sec > ./nit.ts')
+os.system('/usr/local/bin/sec2ts 16 < sec/nit.sec > ts/nit.ts')
 
-out = open("./pat.sec", "wb")
+out = open("sec/gpat.sec", "wb")
 out.write(pat.pack())
 out.close
-out = open("./pat.sec", "wb") # python   flush bug
+out = open("sec/gpat.sec", "wb") # python   flush bug
 out.close
-os.system('/usr/local/bin/sec2ts 0 < ./pat.sec > ./pat.ts')
+os.system('/usr/local/bin/sec2ts 0 < sec/pat.sec > ts/pat.ts')
 
-out = open("./sdt.sec", "wb")
+out = open("sec/gsdt.sec", "wb")
 out.write(sdt.pack())
 out.close
-out = open("./sdt.sec", "wb") # python   flush bug
+out = open("sec/gsdt.sec", "wb") # python   flush bug
 out.close
-os.system('/usr/local/bin/sec2ts 17 < ./sdt.sec > ./sdt.ts')
+os.system('/usr/local/bin/sec2ts 17 < sec/sdt.sec > ts/sdt.ts')
 
-out = open("./pmt.sec", "wb")
+out = open("sec/gpmt.sec", "wb")
 out.write(pmt.pack())
 out.close
-out = open("./pmt.sec", "wb") # python   flush bug
+out = open("sec/gpmt.sec", "wb") # python   flush bug
 out.close
-os.system('/usr/local/bin/sec2ts ' + str(avalpa1_pmt_pid) + ' < ./pmt.sec > ./pmt.ts')
+os.system('/usr/local/bin/sec2ts ' + str(avalpa1_pmt_pid) + ' < sec/pmt.sec > ts/pmt.ts')
 
